@@ -148,7 +148,18 @@ export const TEAM: Player[] = [
     riotId: { gameName: "Lyer", tagLine: "5641" },
     opgg: "https://op.gg/pt/lol/summoners/br/Lyer-5641",
     favoriteChampions: ["Maokai", "Mel", "Kayle"],
-    socials: [],
+    socials: [
+      {
+        platform: "instagram",
+        url: "https://www.instagram.com/lyer001/",
+        label: "Instagram",
+      },
+      {
+        platform: "kick",
+        url: "https://kick.com/lyer01",
+        label: "Kick",
+      },
+    ],
   },
   {
     id: "mychamaqueeuvou",
@@ -179,7 +190,13 @@ export const TEAM: Player[] = [
     riotId: { gameName: "Gabis Koersen", tagLine: "BR1" },
     opgg: "https://op.gg/pt/lol/summoners/br/Gabis-Koersen-BR1",
     favoriteChampions: ["Seraphine", "Lux", "Nautilus"],
-    socials: [],
+    socials: [
+      {
+        platform: "instagram",
+        url: "https://www.instagram.com/gabikoersen?stkn=YzJ5dGxmZWozczl3&utm_source=qr",
+        label: "Instagram",
+      },
+    ],
   },
   {
     id: "coelha-pistoleira",
@@ -190,6 +207,11 @@ export const TEAM: Player[] = [
     opgg: "https://op.gg/pt/lol/summoners/br/Coelhapistoleira-TTV",
     favoriteChampions: ["Seraphine", "Sona", "Fiddlesticks"],
     socials: [
+      {
+        platform: "instagram",
+        url: "https://www.instagram.com/arisalgueiiro/",
+        label: "Instagram",
+      },
       {
         platform: "kick",
         url: "https://kick.com/coelhapistoleira",
