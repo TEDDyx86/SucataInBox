@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens da Sucata in Box.
+ *
+ * Antes estas variáveis existiam mas ninguém consumia: todo componente
+ * escrevia `#FF2A36` à mão. Agora `text-accent`, `bg-accent`, `text-subtle`,
+ * `text-faint` etc. resolvem para cá, e re-tematizar a marca é mexer num
+ * arquivo só.
+ *
+ * Razões de contraste medidas contra a superfície mais escura onde o texto
+ * realmente aparece (zinc-950 sobre o fundo da página, ~#0a0a0c):
+ *   --foreground  #f4f4f5  18.4:1  (AAA)
+ *   --subtle      #a1a1aa   7.7:1  (AAA)
+ *   --faint       #8b8b93   5.9:1  (AA)
+ * Não escurecer mais que isso: `--subtle` e `--faint` substituíram
+ * zinc-500/zinc-600, que reprovavam em AA com 4.1:1 e 2.6:1.
+ */
+:root {
+  --background: #070709;
+  --surface: #0b0b0e;
+  --foreground: #f4f4f5;
+  --accent: #ff2a36;
+  --accent-hover: #d00500;
+  --subtle: #a1a1aa;
+  --faint: #8b8b93;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  /* Malha fina ao fundo: assina a cena esportiva/técnica. */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(255, 42, 54, 0.08) 0%, transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+}
+
+/*
+ * Ancoragem de seção: o header é sticky com ~65px de altura, então sem isto o
+ * topo do grid fica escondido atrás dele ao clicar em "Ver Jogadores".
+ */
+[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/*
+ * prefers-reduced-motion.
+ *
+ * Deliberadamente NÃO é um kill global de 0.01ms em tudo: isso também
+ * pararia o `ping` do indicador de live, que é o único sinal de que alguém
+ * está transmitindo. O efeito colateral seria perder informação, não só
+ * decoração. Os loops decorativos são neutralizados aqui; o ponto de live
+ * mantém um estado estático legível via `motion-safe:` nos componentes.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Barra de rolagem personalizada com o vermelho da Sucata */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #070709;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+  border: 2px solid #070709;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff2a36;
+}
