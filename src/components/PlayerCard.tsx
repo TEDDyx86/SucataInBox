@@ -42,21 +42,17 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
   const isLive = onAir.length > 0;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/60 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_18px_50px_rgba(225,6,0,0.16)]">
-      {/* Faixa lateral que acende no hover */}
-      <span className="absolute inset-y-0 left-0 w-0.5 bg-gradient-to-b from-accent to-amber-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-hairline bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-300 hover:border-accent/35">
+      {/* Filete de acento na borda esquerda: o vermelho entra pela aresta da
+          superfície, não por um halo difuso atrás dela. */}
+      <span className="absolute inset-y-0 left-0 w-px bg-accent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* ---------- Identidade: foto redonda + nome ---------- */}
       <header className="flex items-center gap-4 p-5 pb-4">
         <div className="relative shrink-0">
-          {/* Halo vermelho que acende no hover */}
-          <span className="absolute inset-0 rounded-full bg-accent/25 blur-lg transition-opacity duration-300 group-hover:opacity-100 opacity-0" />
-
           <div
-            className={`relative flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border-[3px] bg-zinc-900 transition-colors duration-300 ${
-              isLive
-                ? "border-emerald-500/70 shadow-[0_0_34px_rgba(16,185,129,0.35)]"
-                : "border-accent/50 shadow-[0_0_34px_rgba(225,6,0,0.28)]"
+            className={`relative flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-zinc-900 transition-colors duration-300 ${
+              isLive ? "border-emerald-500/60" : "border-hairline group-hover:border-accent/40"
             }`}
           >
             {player.photo ? (
@@ -72,7 +68,7 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
               />
             ) : (
               /* Placeholder: entra no lugar da foto enquanto ela não é enviada */
-              <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_120%,rgba(225,6,0,0.35),transparent_70%)]">
+              <div className="absolute inset-0 flex items-center justify-center bg-surface-raised">
                 <RoleIcon lane={player.lane} className="h-16 w-16 opacity-50" />
               </div>
             )}

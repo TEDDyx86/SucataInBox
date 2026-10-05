@@ -14,7 +14,7 @@ export function Navbar({ totalLive = 0 }: { totalLive?: number }) {
           href="#"
           className={`flex min-h-11 min-w-0 items-center gap-3 transition-transform hover:scale-102 ${ring}`}
         >
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-accent/60 bg-white p-1 shadow-[0_0_15px_rgba(225,6,0,0.3)]">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-accent/40 bg-white p-1 transition-colors group-hover:border-accent/70">
             <Image
               src="/sucata-logo.jpg"
               alt="Logo Sucata in Box"
@@ -60,7 +60,7 @@ export function Navbar({ totalLive = 0 }: { totalLive?: number }) {
 
           <a
             href="#elenco"
-            className={`inline-flex min-h-11 shrink items-center justify-center rounded-xl border border-accent bg-accent px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(225,6,0,0.35)] transition-all hover:bg-accent-hover hover:shadow-[0_0_25px_rgba(225,6,0,0.5)] sm:min-h-0 sm:px-4 ${ring}`}
+            className={`inline-flex min-h-11 shrink items-center justify-center rounded-xl border border-accent bg-accent px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-colors hover:bg-accent-hover sm:min-h-0 sm:px-4 ${ring}`}
           >
             <span className="sm:hidden">Elenco</span>
             <span className="hidden sm:inline">Ver Jogadores</span>

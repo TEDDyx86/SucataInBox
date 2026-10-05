@@ -22,26 +22,20 @@ export function RankBadge({ snapshot }: { snapshot: RankedSnapshot }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4 ring-1 ${meta.ring} ${meta.glow}`}
+      className={`relative overflow-hidden rounded-2xl border border-hairline bg-surface-raised p-4 ring-1 ${meta.ring}`}
     >
       <div className="relative flex items-center gap-4">
         {/* Emblema do elo */}
         {art ? (
           <div className="relative flex h-[68px] w-[104px] shrink-0 items-center justify-center">
-            {/* Único brilho do badge, tingido pelo tier. Antes eram duas camadas
-                desfocadas (blur-3xl no canto + blur-2xl atrás do emblema), o que
-                somava 16 camadas de blur no grid inteiro. `bg-current` + a classe
-                de texto do tier é o que dá a cor; sem o `bg-current` o brilho
-                sairia sempre vermelho. */}
-            <span
-              className={`pointer-events-none absolute h-10 w-20 rounded-full bg-current opacity-25 blur-xl ${meta.text}`}
-            />
+            {/* Sem halo difuso: o emblema já é saturado e legível sobre o
+                grafite. O tier se comunica pela cor do texto e pelo anel. */}
             <Image
               src={art.src}
               alt={`Elo ${label}`}
               width={art.width}
               height={art.height}
-              className="relative h-auto max-h-[62px] w-auto max-w-[96px] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.85)]"
+              className="relative h-auto max-h-[62px] w-auto max-w-[96px] object-contain"
             />
           </div>
         ) : (

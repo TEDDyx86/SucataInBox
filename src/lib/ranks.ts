@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Metadados e arte dos elos do League of Legends.
  *
  * Os emblemas em `public/ranks` são as medalhas de tier, já recortadas no
@@ -27,7 +27,6 @@ export type TierMeta = {
   /** Classes Tailwind do texto/anel. */
   text: string;
   ring: string;
-  glow: string;
 };
 
 const T = (
@@ -35,8 +34,7 @@ const T = (
   label: string,
   text: string,
   ring: string,
-  glow: string,
-): TierMeta => ({ key, label, text, ring, glow });
+): TierMeta => ({ key, label, text, ring });
 
 export const TIER_META: Record<TierKey, TierMeta> = {
   IRON: T(
@@ -44,78 +42,62 @@ export const TIER_META: Record<TierKey, TierMeta> = {
     "Ferro",
     "text-zinc-300",
     "ring-zinc-500/30",
-    "shadow-[0_0_22px_rgba(161,161,170,0.18)]",
   ),
   BRONZE: T(
     "bronze",
     "Bronze",
     "text-amber-500",
     "ring-amber-700/40",
-    "shadow-[0_0_22px_rgba(217,119,6,0.22)]",
   ),
   SILVER: T(
     "silver",
     "Prata",
     "text-slate-200",
     "ring-slate-400/40",
-    "shadow-[0_0_22px_rgba(203,213,225,0.22)]",
   ),
   GOLD: T(
     "gold",
     "Ouro",
     "text-yellow-400",
     "ring-yellow-500/40",
-    "shadow-[0_0_22px_rgba(234,179,8,0.28)]",
   ),
   PLATINUM: T(
     "platinum",
     "Platina",
     "text-cyan-300",
     "ring-cyan-400/40",
-    "shadow-[0_0_22px_rgba(34,211,238,0.28)]",
   ),
   EMERALD: T(
     "emerald",
     "Esmeralda",
     "text-emerald-300",
     "ring-emerald-500/40",
-    "shadow-[0_0_22px_rgba(16,185,129,0.28)]",
   ),
   DIAMOND: T(
     "diamond",
     "Diamante",
     "text-sky-300",
     "ring-sky-500/40",
-    "shadow-[0_0_22px_rgba(14,165,233,0.32)]",
   ),
   MASTER: T(
     "master",
     "Mestre",
     "text-purple-300",
     "ring-purple-500/40",
-    "shadow-[0_0_22px_rgba(168,85,247,0.32)]",
   ),
   GRANDMASTER: T(
     "grandmaster",
     "Grão-Mestre",
     "text-rose-400",
     "ring-rose-500/40",
-    "shadow-[0_0_22px_rgba(244,63,94,0.32)]",
   ),
   CHALLENGER: T(
     "challenger",
     "Desafiante",
     "text-amber-200",
     "ring-amber-300/50",
-    "shadow-[0_0_26px_rgba(252,211,77,0.4)]",
   ),
-  UNRANKED: T(
-    "iron",
-    "Sem Ranque",
-    "text-zinc-500",
-    "ring-zinc-800",
-    "",
-  ),
+UNRANKED: T("iron", "Sem Ranque", "text-zinc-500", "ring-zinc-800"),
 };
 
 /**
