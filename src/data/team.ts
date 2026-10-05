@@ -70,7 +70,7 @@ export const TEAM: Player[] = [
     photo: "/players/aninha-gameplay.webp",
     name: "ANINHA GAMEPLAY",
     lane: "TOP",
-    favoriteChampions: ["Gwen", "Mordekaiser", "Ornn"],
+    favoriteChampions: ["Tryndamere", "Yuumi", "Braum"],
     riotId: { gameName: "Aninha gameplay", tagLine: "2108" },
     opgg: "https://op.gg/pt/lol/summoners/br/Aninha%20gameplay-2108",
     socials: [
@@ -91,7 +91,7 @@ export const TEAM: Player[] = [
     photo: "/players/yasuocadeirante.webp",
     name: "YASUOCADEIRANTE",
     lane: "TOP",
-    favoriteChampions: ["Yasuo", "Yone", "Jax"],
+    favoriteChampions: ["Jhin", "Yorick", "Mel"],
     riotId: { gameName: "yasuocadeirante", tagLine: "mono" },
     opgg: "https://op.gg/pt/lol/summoners/br/yasuocadeirante-mono",
     socials: [
@@ -114,6 +114,8 @@ export const TEAM: Player[] = [
     lane: "JUNGLE",
     riotId: { gameName: "RAMMUS", tagLine: "TAUNT" },
     opgg: "https://op.gg/pt/lol/summoners/br/RAMMUS-TAUNT",
+    // Zoeira do time, não é erro: os dados dele são Rammus, Nocturne e Shyvana.
+    favoriteChampions: ["Rammus", "OK.", "TÁ."],
     socials: [],
   },
   {
@@ -122,7 +124,7 @@ export const TEAM: Player[] = [
     name: "YOUGLUBGLUB",
     lane: "MID",
     teamRole: "Capitão",
-    favoriteChampions: ["Fizz", "Ahri", "Sylas"],
+    favoriteChampions: ["Ahri", "Mel", "Yone"],
     riotId: { gameName: "YouGlubGlub", tagLine: "Glub" },
     opgg: "https://op.gg/pt/lol/summoners/br/YouGlubGlub-Glub",
     socials: [
@@ -145,6 +147,7 @@ export const TEAM: Player[] = [
     lane: "MID",
     riotId: { gameName: "Lyer", tagLine: "5641" },
     opgg: "https://op.gg/pt/lol/summoners/br/Lyer-5641",
+    favoriteChampions: ["Maokai", "Mel", "Kayle"],
     socials: [],
   },
   {
@@ -152,7 +155,7 @@ export const TEAM: Player[] = [
     photo: "/players/mychamaqueeuvou.webp",
     name: "MYCHAMAQUEEUVOU",
     lane: "BOT",
-    favoriteChampions: ["Jinx", "Kai'Sa", "Jhin"],
+    favoriteChampions: ["Brand", "Braum", "Caitlyn"],
     riotId: { gameName: "mychamaqueeuvou", tagLine: "velo" },
     opgg: "https://op.gg/pt/lol/summoners/br/mychamaqueeuvou-velo",
     socials: [
@@ -175,6 +178,7 @@ export const TEAM: Player[] = [
     lane: "SUPPORT",
     riotId: { gameName: "Gabis Koersen", tagLine: "BR1" },
     opgg: "https://op.gg/pt/lol/summoners/br/Gabis-Koersen-BR1",
+    favoriteChampions: ["Seraphine", "Lux", "Nautilus"],
     socials: [],
   },
   {
@@ -184,6 +188,7 @@ export const TEAM: Player[] = [
     lane: "SUPPORT",
     riotId: { gameName: "Coelhapistoleira", tagLine: "TTV" },
     opgg: "https://op.gg/pt/lol/summoners/br/Coelhapistoleira-TTV",
+    favoriteChampions: ["Seraphine", "Sona", "Fiddlesticks"],
     socials: [
       {
         platform: "kick",
