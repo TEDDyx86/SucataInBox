@@ -26,9 +26,6 @@ export function Footer() {
                 SUCATA <span className="text-accent">IN BOX</span>
               </span>
             </div>
-            <p className="mt-2 max-w-sm text-xs leading-relaxed text-zinc-400">
-              Site oficial de apresentação dos atletas da Sucata in Box no CBLOW.
-            </p>
           </div>
 
           {/* Criador do site */}
