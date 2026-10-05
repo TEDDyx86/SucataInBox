@@ -1,4 +1,5 @@
-import { getLiveStatus } from "@/lib/kick";
+import { liveCount } from "@/lib/live";
+import { getLiveStatus } from "@/lib/live-server";
 import { TEAM } from "@/data/team";
 import { getRanked, hasRiotKey } from "@/lib/riot";
 import { Navbar } from "@/components/Navbar";
@@ -25,7 +26,8 @@ export default async function Home() {
     });
   }
 
-  const totalLive = TEAM.filter((p) => p.kick && live[p.kick]).length;
+  // Canais ao vivo somando todas as plataformas (Kick e Twitch).
+  const totalLive = liveCount(live);
 
   return (
     <div className="flex min-h-screen flex-col">

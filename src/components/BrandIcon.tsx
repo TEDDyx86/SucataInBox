@@ -35,13 +35,6 @@ const PATHS: Record<PlatformWithArt, string> = {
  */
 const ART: Partial<Record<SocialPlatform, string>> = PATHS;
 
-/** Plataformas que são canais de live (o botão ganha o treatment de "ao vivo"). */
-export const LIVE_PLATFORMS: SocialPlatform[] = ["kick", "twitch"];
-
-export function isLivePlatform(platform: SocialPlatform): boolean {
-  return LIVE_PLATFORMS.includes(platform);
-}
-
 export function BrandIcon({
   platform,
   className = "h-3.5 w-3.5",

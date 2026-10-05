@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TEAM, type Player } from "@/data/team";
-import type { LiveStatus } from "@/lib/kick";
+import type { LiveStatus } from "@/lib/live";
 import type { RankedSnapshot } from "@/lib/riot";
 import { PlayerCard } from "./PlayerCard";
 
@@ -66,7 +66,7 @@ export function PlayerGrid({
           <PlayerCard
             key={player.id}
             player={player}
-            live={Boolean(player.kick && live[player.kick])}
+            live={live}
             ranks={ranks[player.id]}
           />
         ))}

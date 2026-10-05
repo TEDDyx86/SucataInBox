@@ -3,37 +3,43 @@
 import Image from "next/image";
 import { ExternalLink, Swords } from "lucide-react";
 import type { Player } from "@/data/team";
-import { LANE_CONFIG, opggUrl } from "@/data/team";
+import {
+  LANE_CONFIG,
+  liveChannelUrl,
+  opggUrl,
+  type LivePlatform,
+} from "@/data/team";
 import { PLATFORM_CONFIG } from "@/data/social";
 import type { RankedSnapshot } from "@/lib/riot";
+import { livePlatformsFor, type LiveStatus } from "@/lib/live";
 import { RoleIcon } from "./RoleIcon";
 import { RankBadge } from "./RankBadge";
-import { BrandIcon, isLivePlatform } from "./BrandIcon";
+import { BrandIcon } from "./BrandIcon";
 
 export type PlayerCardProps = {
   player: Player;
-  /** true apenas se o jogador tem canal na Kick e está transmitindo. */
-  live: boolean;
+  /** Status de live de todas as plataformas, para o card descobrir onde brilha. */
+  live: LiveStatus;
   /** Ranques vindos da Riot API; undefined enquanto carrega ou se indisponível. */
   ranks?: RankedSnapshot[];
 };
 
+/** Canais do jogador que estão transmitindo, com a URL de cada um. */
+function liveChannels(
+  player: Player,
+  live: LiveStatus,
+): { platform: LivePlatform; url: string }[] {
+  return livePlatformsFor(player, live).flatMap((platform) => {
+    const url = liveChannelUrl(player, platform);
+    return url ? [{ platform, url }] : [];
+  });
+}
+
 export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
   const lane = LANE_CONFIG[player.lane];
   const solo = ranks?.find((r) => r.queue === "RANKED_SOLO_5x5");
-
-  const socials = [
-    ...player.socials,
-    ...(player.kick && !player.socials.some((s) => s.platform === "kick")
-      ? [
-          {
-            platform: "kick" as const,
-            url: `https://kick.com/${player.kick}`,
-            label: "Kick",
-          },
-        ]
-      : []),
-  ];
+  const onAir = liveChannels(player, live);
+  const isLive = onAir.length > 0;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/60 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_18px_50px_rgba(225,6,0,0.16)]">
@@ -48,7 +54,7 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
 
           <div
             className={`relative flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-full border-[3px] bg-zinc-900 transition-colors duration-300 ${
-              live
+              isLive
                 ? "border-emerald-500/70 shadow-[0_0_34px_rgba(16,185,129,0.35)]"
                 : "border-accent/50 shadow-[0_0_34px_rgba(225,6,0,0.28)]"
             }`}
@@ -72,23 +78,33 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
             )}
           </div>
 
-          {/* Status Ao Vivo, sobreposto à foto. É link para o canal da Kick em
-              vez de `title` num span: tooltip não chega por teclado nem por
-              leitor de tela, e um link anuncia o destino e é focável. A área
-              de toque cresce pelo pseudo-elemento, que cabe dentro da foto
-              e portanto não é cortado pelo overflow do card. */}
-          {live && player.kick && (
-            <a
-              href={`https://kick.com/${player.kick}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Ver a live de ${player.name} na Kick`}
-              className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-zinc-950 bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.6)] after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              {/* `motion-safe:` porque o bloco global de prefers-reduced-motion
-                  mata o ping; sem ele o badge sólido já segura o estado "ao vivo". */}
-              <span className="h-2.5 w-2.5 motion-safe:animate-ping rounded-full bg-white/80" />
-            </a>
+          {/* Status Ao Vivo, sobreposto à foto. É link para o canal em vez de
+              `title` num span: tooltip não chega por teclado nem por leitor de
+              tela, e um link anuncia o destino e é focável. A área de toque
+              cresce pelo pseudo-elemento, que cabe dentro da foto e portanto
+              não é cortado pelo overflow do card.
+
+              A fileira é `flex-row-reverse` ancorada no canto porque um jogador
+              pode estar no ar nas duas plataformas ao mesmo tempo: cada badge
+              vira um link para o canal daquela plataforma, e o primeiro da lista
+              fica na posição original do canto. */}
+          {onAir.length > 0 && (
+            <div className="absolute -right-1 -bottom-1 flex flex-row-reverse">
+              {onAir.map(({ platform, url }) => (
+                <a
+                  key={platform}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Ver a live de ${player.name} na ${PLATFORM_CONFIG[platform].label}`}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-zinc-950 bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.6)] after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                >
+                  {/* `motion-safe:` porque o bloco global de prefers-reduced-motion
+                      mata o ping; sem ele o badge sólido já segura o estado "ao vivo". */}
+                  <span className="h-2.5 w-2.5 motion-safe:animate-ping rounded-full bg-white/80" />
+                </a>
+              ))}
+            </div>
           )}
         </div>
 
@@ -151,9 +167,14 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
 
         {/* Redes + OP.GG */}
         <footer className="mt-auto flex flex-wrap items-center gap-2 border-t border-zinc-800/80 pt-4">
-          {socials.map((s) => {
+          {player.socials.map((s) => {
             const config = PLATFORM_CONFIG[s.platform];
-            const isLive = isLivePlatform(s.platform);
+            /* O pontinho agora consulta o status real em vez de testar se a
+               plataforma "tem live": antes ele acendia em todo botão de Kick e
+               Twitch, mesmo com o jogador offline, o que prometia um estado que
+               o botão não tinha. `onAir` só contém plataformas de live, então
+               não é preciso um teste separado aqui. */
+            const isLive = onAir.some((c) => c.platform === s.platform);
             return (
               <a
                 key={s.url}

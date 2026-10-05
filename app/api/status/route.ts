@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLiveStatus } from "@/lib/kick";
+import { getLiveStatus } from "@/lib/live-server";
 
 export const dynamic = "force-dynamic";
 

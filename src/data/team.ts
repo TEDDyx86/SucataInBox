@@ -19,6 +19,18 @@ export type Social = {
   label: string;
 };
 
+/**
+ * Plataformas onde o canal é consultado para o badge de live.
+ *
+ * Lista canônica de propósito: `BrandIcon` (treatment "ao vivo" do botão),
+ * `lib/live` (chaves do mapa de status) e os helpers abaixo leem daqui, então
+ * adicionar uma plataforma de streaming é um item só em vez de três listas
+ * independentes que divergem sozinhas com o tempo.
+ */
+export const LIVE_PLATFORMS = ["kick", "twitch"] as const;
+
+export type LivePlatform = (typeof LIVE_PLATFORMS)[number];
+
 export type Player = {
   /** Identificador único do jogador. */
   id: string;
@@ -45,11 +57,6 @@ export type Player = {
    * Existe porque o OP.GG usa o nome com espaço literal na URL.
    */
   opgg?: string;
-  /**
-   * Slug do canal na Kick. Ausente = o jogador não tem canal,
-   * e por isso não exibirá badge de live na Kick.
-   */
-  kick?: string;
   /** Redes sociais do jogador. */
   socials: Social[];
 };
@@ -87,7 +94,6 @@ export const TEAM: Player[] = [
     favoriteChampions: ["Yasuo", "Yone", "Jax"],
     riotId: { gameName: "yasuocadeirante", tagLine: "mono" },
     opgg: "https://op.gg/pt/lol/summoners/br/yasuocadeirante-mono",
-    kick: "vinnycaffe",
     socials: [
       {
         platform: "tiktok",
@@ -119,7 +125,6 @@ export const TEAM: Player[] = [
     favoriteChampions: ["Fizz", "Ahri", "Sylas"],
     riotId: { gameName: "YouGlubGlub", tagLine: "Glub" },
     opgg: "https://op.gg/pt/lol/summoners/br/YouGlubGlub-Glub",
-    kick: "glub-lol",
     socials: [
       {
         platform: "x",
@@ -179,7 +184,6 @@ export const TEAM: Player[] = [
     lane: "SUPPORT",
     riotId: { gameName: "Coelhapistoleira", tagLine: "TTV" },
     opgg: "https://op.gg/pt/lol/summoners/br/Coelhapistoleira-TTV",
-    kick: "coelhapistoleira",
     socials: [
       {
         platform: "kick",
@@ -239,4 +243,65 @@ export function opggUrl(player: Player): string {
   if (player.opgg) return player.opgg;
   const base = `${player.riotId.gameName}-${player.riotId.tagLine}`;
   return `https://www.op.gg/lol/summoners/br/${encodeURIComponent(base)}`;
+}
+
+/**
+ * Extrai o identificador do canal (slug na Kick, login na Twitch) da URL de um
+ * social: o identificador é sempre o primeiro segmento do caminho em
+ * `kick.com/<slug>` e `twitch.tv/<login>`.
+ *
+ * `URL` trata o caso do `www.` e o do `?ref=` que o OP.GG às vezes anexa; o
+ * `decodeURIComponent` é o que garante que o identificador devolvido é o mesmo
+ * que a API espera, e não a forma percent-encoded da URL.
+ */
+function handleFromUrl(url: string): string | undefined {
+  try {
+    const handle = decodeURIComponent(new URL(url).pathname.split("/")[1] ?? "");
+    return handle || undefined;
+  } catch {
+    // URL malformada é dado inválido no elenco, não um motivo para derrubar a
+    // página: o jogador simplesmente fica sem canal.
+    return undefined;
+  }
+}
+
+/**
+ * Social de uma plataforma de live, se o jogador tiver.
+ */
+function liveSocial(
+  player: Player,
+  platform: LivePlatform,
+): Social | undefined {
+  return player.socials.find((s) => s.platform === platform);
+}
+
+/**
+ * Identificador do canal do jogador na plataforma. Ausente = não tem canal,
+ * e por isso não exibirá badge de live nem entra na consulta da API.
+ *
+ * A fonte da verdade é `socials`: o handle é sempre derivado da URL em vez de
+ * guardado em um campo próprio, o que elimina a possibilidade de o link e o
+ * dado consultado divergirem.
+ */
+export function liveHandle(
+  player: Player,
+  platform: LivePlatform,
+): string | undefined {
+  const social = liveSocial(player, platform);
+  return social ? handleFromUrl(social.url) : undefined;
+}
+
+/**
+ * URL pública do canal, para o badge de live linkar para o lugar certo.
+ *
+ * O social do jogador é a própria URL do canal, então não há nada a reconstruir:
+ * devolver a URL original também preserva query strings e caminhos que o
+ * streamer tenha configurado.
+ */
+export function liveChannelUrl(
+  player: Player,
+  platform: LivePlatform,
+): string | undefined {
+  const social = liveSocial(player, platform);
+  return social && handleFromUrl(social.url) ? social.url : undefined;
 }
