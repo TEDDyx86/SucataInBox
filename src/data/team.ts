@@ -116,7 +116,13 @@ export const TEAM: Player[] = [
     opgg: "https://op.gg/pt/lol/summoners/br/RAMMUS-TAUNT",
     // Zoeira do time, não é erro: os dados dele são Rammus, Nocturne e Shyvana.
     favoriteChampions: ["Rammus", "OK.", "TÁ."],
-    socials: [],
+    socials: [
+      {
+        platform: "kick",
+        url: "https://kick.com/rammustaunt",
+        label: "Kick",
+      },
+    ],
   },
   {
     id: "youGlubGlub",
@@ -193,7 +199,7 @@ export const TEAM: Player[] = [
     socials: [
       {
         platform: "instagram",
-        url: "https://www.instagram.com/gabikoersen?stkn=YzJ5dGxmZWozczl3&utm_source=qr",
+        url: "https://www.instagram.com/gabikoersen/",
         label: "Instagram",
       },
     ],
