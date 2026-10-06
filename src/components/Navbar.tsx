@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { PLATFORM_CONFIG } from "@/data/social";
+import { BrandIcon } from "./BrandIcon";
 
 export function Navbar({
   totalLive = 0,
@@ -59,6 +61,16 @@ export function Navbar({
             <span className="sm:hidden">Staff</span>
             <span className="hidden sm:inline">Coach Staff</span>
           </Link>
+          <a
+            href="https://discord.gg/jukes"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Entrar no Discord da Sucata in Box (abre em nova aba)"
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-xl border sm:w-auto sm:px-3 ${PLATFORM_CONFIG.discord.bg} ${PLATFORM_CONFIG.discord.border} ${PLATFORM_CONFIG.discord.text} ${PLATFORM_CONFIG.discord.hoverBg} ${ring}`}
+          >
+            <BrandIcon platform="discord" className="h-5 w-5 shrink-0" />
+            <span className="hidden text-xs font-bold sm:inline">Discord</span>
+          </a>
           {allLive > 0 ? (
             <Link
               href={liveHref}
