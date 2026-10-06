@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
         pathname: "/logo.svg",
         search: "",
       },
+      {
+        protocol: "https",
+        hostname: "files.kick.com",
+        port: "",
+        pathname: "/images/user/**",
+        search: "",
+      },
     ],
   },
 };

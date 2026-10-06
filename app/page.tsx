@@ -2,6 +2,8 @@ import { liveCount } from "@/lib/live";
 import { getLiveStatus } from "@/lib/live-server";
 import { TEAM } from "@/data/team";
 import { getRanked, hasRiotKey } from "@/lib/riot";
+import { getCoachStaffLiveStatus } from "@/lib/coach-staff-live";
+import { coachStaffLiveCount } from "@/data/coach-staff";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { PlayerGrid } from "@/components/PlayerGrid";
@@ -12,8 +14,12 @@ import type { RankedSnapshot } from "@/lib/riot";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  // A Kick nunca lança erro não tratado, preservando a integridade da página.
-  const live = await getLiveStatus();
+  // Os providers degradam para último estado conhecido ou offline, preservando
+  // a integridade da página mesmo se uma API estiver indisponível.
+  const [live, coachStaffLive] = await Promise.all([
+    getLiveStatus(),
+    getCoachStaffLiveStatus(),
+  ]);
 
   // Riot API: busca os ranques reais em tempo real
   const ranks: Record<string, RankedSnapshot[]> = {};
@@ -31,7 +37,7 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar totalLive={totalLive} />
+      <Navbar totalLive={totalLive} staffLive={coachStaffLiveCount(coachStaffLive)} />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
         <Hero />
