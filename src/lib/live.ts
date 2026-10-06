@@ -1,4 +1,10 @@
-import { LIVE_PLATFORMS, liveHandle, type LivePlatform, type Player } from "@/data/team";
+import {
+  LIVE_PLATFORMS,
+  TEAM,
+  liveHandle,
+  type LivePlatform,
+  type Player,
+} from "@/data/team";
 
 /**
  * Status de live por plataforma e canal, ex.: `{ "kick:glub-lol": true,
@@ -39,10 +45,10 @@ export function livePlatformsFor(
   });
 }
 
-/** Quantos canais do elenco inteiro estão ao vivo, somando todas as plataformas. */
+/**
+ * Quantos jogadores do elenco estão ao vivo, contando cada pessoa uma vez
+ * mesmo que esteja transmitindo em mais de uma plataforma.
+ */
 export function liveCount(status: LiveStatus): number {
-  return Object.values(status).reduce(
-    (total, isLive) => total + (isLive ? 1 : 0),
-    0,
-  );
+  return TEAM.filter((player) => livePlatformsFor(player, status).length > 0).length;
 }

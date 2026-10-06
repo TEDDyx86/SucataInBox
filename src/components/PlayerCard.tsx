@@ -40,6 +40,9 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
   const solo = ranks?.find((r) => r.queue === "RANKED_SOLO_5x5");
   const onAir = liveChannels(player, live);
   const isLive = onAir.length > 0;
+  // Um único badge por jogador. Se ele estiver simultaneamente em mais de uma
+  // plataforma, usamos a primeira na ordem canônica (Kick antes de Twitch).
+  const primaryLive = onAir[0];
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-hairline bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-300 hover:border-accent/35">
@@ -80,27 +83,21 @@ export function PlayerCard({ player, live, ranks }: PlayerCardProps) {
               cresce pelo pseudo-elemento, que cabe dentro da foto e portanto
               não é cortado pelo overflow do card.
 
-              A fileira é `flex-row-reverse` ancorada no canto porque um jogador
-              pode estar no ar nas duas plataformas ao mesmo tempo: cada badge
-              vira um link para o canal daquela plataforma, e o primeiro da lista
-              fica na posição original do canto. */}
-          {onAir.length > 0 && (
-            <div className="absolute -right-1 -bottom-1 flex flex-row-reverse">
-              {onAir.map(({ platform, url }) => (
-                <a
-                  key={platform}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Ver a live de ${player.name} na ${PLATFORM_CONFIG[platform].label}`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-zinc-950 bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.6)] after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                >
-                  {/* `motion-safe:` porque o bloco global de prefers-reduced-motion
-                      mata o ping; sem ele o badge sólido já segura o estado "ao vivo". */}
-                  <span className="h-2.5 w-2.5 motion-safe:animate-ping rounded-full bg-white/80" />
-                </a>
-              ))}
-            </div>
+              Um badge por jogador mesmo se estiver ao vivo em mais de uma
+              plataforma. Os botões sociais continuam mostrando o estado de cada
+              canal individualmente. */}
+          {primaryLive && (
+            <a
+              href={primaryLive.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Ver a live de ${player.name} na ${PLATFORM_CONFIG[primaryLive.platform].label}`}
+              className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-zinc-950 bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.6)] after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              {/* `motion-safe:` porque o bloco global de prefers-reduced-motion
+                  mata o ping; sem ele o badge sólido já segura o estado "ao vivo". */}
+              <span className="h-2.5 w-2.5 motion-safe:animate-ping rounded-full bg-white/80" />
+            </a>
           )}
         </div>
 

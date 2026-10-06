@@ -59,11 +59,20 @@ export function Navbar({ totalLive = 0 }: { totalLive?: number }) {
           )}
 
           <a
-            href="#elenco"
-            className={`inline-flex min-h-11 shrink items-center justify-center rounded-xl border border-accent bg-accent px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-colors hover:bg-accent-hover sm:min-h-0 sm:px-4 ${ring}`}
+            href="https://cblow.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Site oficial do campeonato CBLOW (abre em nova aba)"
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform hover:scale-105 ${ring}`}
           >
-            <span className="sm:hidden">Elenco</span>
-            <span className="hidden sm:inline">Ver Jogadores</span>
+            <Image
+              src="https://cblow.xyz/logo.svg"
+              alt=""
+              width={32}
+              height={32}
+              unoptimized
+              className="h-8 w-8 shrink-0 object-contain"
+            />
           </a>
         </div>
       </div>

@@ -84,6 +84,11 @@ export const TEAM: Player[] = [
         url: "https://www.twitch.tv/aninha_gameplay_trynda",
         label: "Twitch",
       },
+      {
+        platform: "kick",
+        url: "https://kick.com/aninha-gameplay-trynda",
+        label: "Kick",
+      },
     ],
   },
   {
@@ -201,6 +206,11 @@ export const TEAM: Player[] = [
         platform: "instagram",
         url: "https://www.instagram.com/gabikoersen/",
         label: "Instagram",
+      },
+      {
+        platform: "kick",
+        url: "https://kick.com/gabikoersen",
+        label: "Kick",
       },
     ],
   },
