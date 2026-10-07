@@ -1,3 +1,4 @@
+import "server-only";
 import { unstable_cache } from "next/cache";
 import { TEAM, liveHandle } from "@/data/team";
 
@@ -133,6 +134,19 @@ async function getAppAccessToken(): Promise<string> {
     tokenInFlight = null;
   });
   return tokenInFlight;
+}
+
+/** Client ID and app token for server-side Helix endpoints beyond live streams. */
+export async function getTwitchHelixAuth(): Promise<{ clientId: string; accessToken: string }> {
+  if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET) {
+    throw new Error("Configure TWITCH_CLIENT_ID e TWITCH_CLIENT_SECRET para integrar clipes da Twitch.");
+  }
+  return { clientId: TWITCH_CLIENT_ID, accessToken: await getAppAccessToken() };
+}
+
+/** Invalidate the shared app token so any Helix endpoint can retry a 401 once. */
+export function invalidateTwitchHelixToken(): void {
+  invalidateToken();
 }
 
 /* -------------------------------------------------------------------------- */

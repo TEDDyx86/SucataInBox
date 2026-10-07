@@ -38,6 +38,13 @@ export function Navbar({
         {/* Status de Live ou Botão de Ação */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
+            href="/clips"
+            aria-label="Abrir clipes da equipe"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center px-1 text-xs font-black uppercase tracking-wider text-subtle transition-colors hover:text-white sm:px-2"
+          >
+            Clipes
+          </Link>
+          <Link
             href="/coach-staff"
             aria-label="Abrir a página Coach Staff"
             className={`inline-flex min-h-11 shrink-0 items-center justify-center px-1 text-xs font-black uppercase tracking-wider text-subtle transition-colors hover:text-white ${ring} sm:px-2`}
