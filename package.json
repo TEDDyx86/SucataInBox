@@ -9,7 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/composer": "0.25.0",
+    "@prisma/composer-prisma-cloud": "0.25.0",
+    "alchemy": "2.0.0-beta.78",
     "clsx": "^2.1.1",
+    "effect": "4.0.0-rc.115",
     "lucide-react": "^1.52.0",
     "next": "16.3.8",
     "react": "19.2.8",
@@ -23,7 +27,19 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "prisma": "8.0.0-rc.19",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@effect/platform-bun": "4.0.0-rc.115",
+    "@effect/platform-node": "4.0.0-rc.115",
+    "@effect/platform-node-shared": "4.0.0-rc.115",
+    "@effect/sql-d1": "4.0.0-rc.115",
+    "@effect/sql-mysql2": "4.0.0-rc.115",
+    "@effect/sql-pg": "4.0.0-rc.115",
+    "@effect/sql-sqlite-do": "4.0.0-rc.115",
+    "@effect/vitest": "4.0.0-rc.115",
+    "effect": "4.0.0-rc.115"
   }
 }
