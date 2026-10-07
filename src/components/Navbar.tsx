@@ -28,27 +28,11 @@ export function Navbar({
         {/* Logo & Marca */}
         <Link
           href="/"
-          className={`flex min-h-11 min-w-0 items-center gap-3 transition-transform hover:scale-102 ${ring}`}
+          className={`flex min-h-11 min-w-0 items-center transition-transform hover:scale-102 ${ring}`}
         >
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-accent/40 bg-white p-1 transition-colors group-hover:border-accent/70">
-            <Image
-              src="/sucata-logo.jpg"
-              alt="Logo Sucata in Box"
-              width={44}
-              height={44}
-              className="h-full w-full object-contain object-center"
-            />
-          </div>
-          <div className="min-w-0 shrink">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate text-base font-black tracking-wider text-white">
-                SUCATA <span className="text-accent">IN BOX</span>
-              </span>
-              <span className="hidden shrink-0 rounded-md border border-accent/40 bg-accent/20 px-1.5 py-0.2 text-[9px] font-extrabold tracking-widest text-accent sm:inline-block">
-                CBLOW
-              </span>
-            </div>
-          </div>
+          <span className="truncate text-base font-black tracking-wider text-white">
+            SUCATA <span className="text-accent">IN BOX</span>
+          </span>
         </Link>
 
         {/* Status de Live ou Botão de Ação */}
