@@ -16,11 +16,10 @@ export function Navbar({
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
   const allLive = totalLive + staffLive;
   const staffOnly = totalLive === 0 && staffLive > 0;
-  const liveHref = totalLive > 0 ? "/#elenco" : "/coach-staff";
   const liveLabel = staffOnly ? `${staffLive} STAFF AO VIVO` : `${allLive} AO VIVO`;
-  const liveAriaLabel = `${allLive} ${allLive === 1 ? "pessoa" : "pessoas"} ao vivo; ${
-    staffOnly ? "abrir Coach Staff" : "abrir elenco"
-  }`;
+  const liveAriaLabel = staffOnly
+    ? `${staffLive} ${staffLive === 1 ? "pessoa" : "pessoas"} do Coach Staff ao vivo`
+    : `${allLive} ${allLive === 1 ? "pessoa" : "pessoas"} ao vivo`;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/95 backdrop-blur-xl">
@@ -63,10 +62,12 @@ export function Navbar({
             <span className="hidden text-xs font-bold sm:inline">Discord</span>
           </a>
           {allLive > 0 ? (
-            <Link
-              href={liveHref}
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               aria-label={liveAriaLabel}
-              className={`flex min-h-11 min-w-0 shrink items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-950/70 px-3 py-1.5 text-xs font-bold text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-transform hover:scale-105 sm:min-h-0 ${ring}`}
+              className="flex min-h-11 min-w-0 shrink items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-950/70 px-3 py-1.5 text-xs font-bold text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] sm:min-h-0"
             >
               <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
@@ -75,7 +76,7 @@ export function Navbar({
               {/* Em telas estreitas só o ponto permanece: o texto custaria ~85px
                   que a marca precisa para não colapsar. */}
               <span className="hidden truncate sm:inline">{liveLabel}</span>
-            </Link>
+            </div>
           ) : (
             <div className="hidden items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-xs font-medium text-zinc-400 sm:flex">
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
