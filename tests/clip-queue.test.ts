@@ -9,7 +9,7 @@ describe("Kick import queue", () => {
 
   it("trims multiline input, ignores blank lines, and creates queued entries", () => {
     const result = queueModule?.enqueueClipLinks(
-      "  https://kick.com/vinnycaffe/clips/clip_01M46K06Z01GDT3T87F3E4B7EG  \n\nhttps://kick.com/aninha-gameplay-trynda/clips/clip_01M477GZSF6Z0V4YTB6BDCCPAC",
+      "  https://kick.com/vinnycaffe/clips/clip_01M46K06Z01GDT3T87F3E4B7EG  \n\nhttps://kick.com/aninha_gameplay_trynda/clips/clip_01M477GZSF6Z0V4YTB6BDCCPAC",
       "kick",
       [],
       () => "queue-id",
@@ -70,7 +70,7 @@ describe("Kick import queue", () => {
 
   it("reports invalid lines without blocking valid links", () => {
     const result = queueModule?.enqueueClipLinks(
-      "not a Kick URL\nhttps://kick.com/aninha-gameplay-trynda/clips/clip_01M477GZSF6Z0V4YTB6BDCCPAC",
+      "not a Kick URL\nhttps://kick.com/aninha_gameplay_trynda/clips/clip_01M477GZSF6Z0V4YTB6BDCCPAC",
       "kick",
       [],
       () => "queue-id",

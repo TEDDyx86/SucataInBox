@@ -86,7 +86,7 @@ export const TEAM: Player[] = [
       },
       {
         platform: "kick",
-        url: "https://kick.com/aninha-gameplay-trynda",
+        url: "https://kick.com/aninha_gameplay_trynda",
         label: "Kick",
       },
     ],
