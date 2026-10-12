@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Play, X } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Play, X } from "lucide-react";
 import type { PublishedClip } from "@/lib/clips";
 import { ClipPlayer } from "@/components/ClipPlayer";
+import { ClipSubmissionForm } from "@/components/ClipSubmissionForm";
 
 type SortBy = "recent" | "views";
 
@@ -11,6 +12,7 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
   const [sortBy, setSortBy] = useState<SortBy>("recent");
   const [playerFilter, setPlayerFilter] = useState("all");
   const [selected, setSelected] = useState<PublishedClip | null>(null);
+  const [submissionOpen, setSubmissionOpen] = useState(false);
   const players = [...new Set(clips.map((clip) => clip.player_name))].sort();
   const visibleClips = clips
     .filter((clip) => playerFilter === "all" || clip.player_name === playerFilter)
@@ -27,7 +29,19 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
             <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">CLIPES</h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-subtle">Assista aos momentos do time</p>
           </div>
+          <button
+            type="button"
+            aria-expanded={submissionOpen}
+            aria-controls="clip-submission-form"
+            onClick={() => setSubmissionOpen((open) => !open)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-accent px-4 text-xs font-black text-black transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <ArrowUpRight className="h-4 w-4" />
+            {submissionOpen ? "Fechar envio" : "Enviar clipe"}
+          </button>
         </header>
+
+        {submissionOpen && <div id="clip-submission-form"><ClipSubmissionForm /></div>}
 
         <div className="mb-6 flex flex-wrap items-end justify-end gap-3">
           <label className="grid gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-faint">
