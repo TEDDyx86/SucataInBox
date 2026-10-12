@@ -83,6 +83,16 @@ export const COACH_STAFF: CoachStaffMember[] = [
       { platform: "x", url: "https://x.com/EsquisIsa", label: "X" },
     ],
   },
+  {
+    id: "aegis",
+    name: "Aegis",
+    role: "Coach",
+    kickUrl: "https://kick.com/aegislol1",
+    socials: [
+      { platform: "instagram", url: "https://www.instagram.com/gabriel.aegis1/", label: "Instagram" },
+      { platform: "x", url: "https://x.com/Aegislol1", label: "X" },
+    ],
+  },
 ];
 
 /** Extrai o login que a API da Kick espera do URL público do canal. */
