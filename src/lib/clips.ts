@@ -15,6 +15,7 @@ export type PublishedClip = {
   duration_seconds: number;
   view_count: number;
   created_at: string;
+  community_submitter_name: string | null;
 };
 
 export async function getPublishedClips(): Promise<PublishedClip[]> {
@@ -22,7 +23,7 @@ export async function getPublishedClips(): Promise<PublishedClip[]> {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("clips")
-    .select("id, source_platform, source_clip_id, source_url, source_thumbnail_url, source_created_at, title, player_id, duration_seconds, view_count, created_at")
+    .select("id, source_platform, source_clip_id, source_url, source_thumbnail_url, source_created_at, title, player_id, duration_seconds, view_count, created_at, community_submitter_name")
     .eq("status", "published")
     .order("source_created_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
