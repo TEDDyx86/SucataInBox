@@ -101,6 +101,27 @@ describe("clip submission moderation", () => {
     expect(h.getSubmission()).toBeNull();
   });
 
+  it("prevents two concurrent approvals from invoking the importer twice", async () => {
+    const h = harness();
+    const originalImport = h.dependencies.importClip;
+    let announceStarted!: () => void;
+    let releaseImport!: () => void;
+    const started = new Promise<void>((resolve) => { announceStarted = resolve; });
+    const gate = new Promise<void>((resolve) => { releaseImport = resolve; });
+    h.dependencies.importClip = async (...args) => {
+      announceStarted();
+      await gate;
+      await originalImport(...args);
+    };
+
+    const first = approveClipSubmission("submission-1", staff, h.dependencies);
+    await started;
+    await expect(approveClipSubmission("submission-1", staff, h.dependencies)).resolves.toEqual({ kind: "conflict" });
+    releaseImport();
+    await expect(first).resolves.toEqual({ kind: "published" });
+    expect(h.calls).toHaveLength(1);
+  });
+
   it("keeps an import failure retryable and sanitizes provider details", async () => {
     const h = harness(pending, { importError: true });
     await expect(approveClipSubmission("submission-1", staff, h.dependencies)).resolves.toEqual({ kind: "failed" });

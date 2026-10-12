@@ -63,4 +63,10 @@ describe("parseClipSubmission", () => {
       .toMatchObject({ ok: false });
     expect(parseClipSubmission(null)).toMatchObject({ ok: false });
   });
+
+  it("rejects oversized URLs and fields with the wrong runtime type", () => {
+    expect(parseClipSubmission({ sourceUrl: `${kickUrl}${"x".repeat(2048)}` })).toMatchObject({ ok: false });
+    expect(parseClipSubmission({ sourceUrl: kickUrl, displayName: 42, consent: true })).toMatchObject({ ok: false });
+    expect(parseClipSubmission({ sourceUrl: kickUrl, displayName: "Name", consent: "yes" })).toMatchObject({ ok: false });
+  });
 });

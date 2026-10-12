@@ -56,8 +56,8 @@ create index if not exists clip_submission_rate_limits_expiry_idx
 alter table public.clip_submissions enable row level security;
 alter table public.clip_submission_rate_limits enable row level security;
 
-revoke all on table public.clip_submissions from anon, authenticated;
-revoke all on table public.clip_submission_rate_limits from anon, authenticated;
+revoke all on table public.clip_submissions from public, anon, authenticated;
+revoke all on table public.clip_submission_rate_limits from public, anon, authenticated;
 grant all on table public.clip_submissions to service_role;
 grant all on table public.clip_submission_rate_limits to service_role;
 

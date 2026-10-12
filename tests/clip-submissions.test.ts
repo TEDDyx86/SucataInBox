@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createHmac } from "node:crypto";
 import { createClipSubmission } from "../src/lib/clip-submissions";
 import { handleClipSubmissionPost } from "../src/lib/clip-submission-http";
 import { parseClipSubmission } from "../src/lib/clip-submission-input";
@@ -47,7 +48,10 @@ describe("public submission endpoint contract", () => {
     const response = await post(validBody, { submit });
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ received: true });
-    expect(submit).toHaveBeenCalledWith(expect.objectContaining({ sourcePlatform: "twitch" }), expect.any(String));
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({ sourcePlatform: "twitch" }),
+      createHmac("sha256", "service-secret").update("203.0.113.2").digest("hex"),
+    );
   });
 
   it("silently accepts the honeypot without a persistence call", async () => {
@@ -98,5 +102,14 @@ describe("public submission endpoint contract", () => {
     const submit = vi.fn();
     expect((await handleClipSubmissionPost(request, { secret: "secret", submit })).status).toBe(413);
     expect(submit).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-JSON content types", async () => {
+    const response = await handleClipSubmissionPost(new Request("https://example.test/api/clip-submissions", {
+      method: "POST",
+      headers: { "content-type": "text/plain", "x-forwarded-for": "203.0.113.2" },
+      body: JSON.stringify(validBody),
+    }), { secret: "secret", submit: vi.fn() });
+    expect(response.status).toBe(400);
   });
 });
