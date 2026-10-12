@@ -100,6 +100,9 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
                 <div className="p-4">
                   <h2 className="truncate text-base font-black text-white">{clip.title}</h2>
                   <p className="mt-1 truncate text-xs font-bold text-subtle">{clip.player_name}</p>
+                  {clip.community_submitter_name && (
+                    <p className="mt-1 truncate text-xs text-faint">Enviado por {clip.community_submitter_name}</p>
+                  )}
                   <p className="mt-3 flex items-center justify-between text-[11px] text-faint">
                     <span>{clip.view_count.toLocaleString("pt-BR")} visualizações na Kick</span>
                     <time dateTime={clip.source_created_at ?? clip.created_at}>{formatAge(clip.source_created_at ?? clip.created_at)}</time>

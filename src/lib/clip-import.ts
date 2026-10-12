@@ -7,11 +7,13 @@ import { findTeamPlayerByLiveHandle } from "@/lib/clip-player-mapping";
 import { resolveKickClip } from "@/lib/kick-source";
 import { deleteR2Objects, hasR2Config, listR2Keys, putR2Object } from "@/lib/r2";
 import { createSupabaseAdminClient, type StaffContext } from "@/lib/supabase/server";
+import { publishImportedClip, resolveClipImportOwnership } from "@/lib/community-clip-import";
 
 const KICK_CDN = "clips.kick.com";
+export type CommunityClipImportContext = { submissionId: string };
 
 /** Import a public Kick clip and persist its complete HLS package to private R2. */
-export async function importKickClip(kickUrl: string, submittedBy: StaffContext) {
+export async function importKickClip(kickUrl: string, submittedBy: StaffContext, community?: CommunityClipImportContext) {
   if (!hasR2Config()) throw new Error("Configure as credenciais do Cloudflare R2 antes de importar clipes.");
 
   const { clipId, channelSlug } = parseKickClipUrl(kickUrl);
@@ -21,15 +23,13 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext)
   const supabase = createSupabaseAdminClient();
   const { data: existing, error: lookupError } = await supabase
     .from("clips")
-    .select("id, storage_prefix, status")
+    .select("id, storage_prefix, status, community_submission_id")
     .eq("kick_clip_id", clipId)
     .maybeSingle();
   if (lookupError) throw new Error("Não foi possível verificar se o clipe já foi importado.");
-  if (existing && existing.status !== "failed") {
-    throw new Error("Este clipe já está importado ou em processamento.");
-  }
+  const ownership = resolveClipImportOwnership(existing, community?.submissionId ?? null);
 
-  const clipRecordId = existing?.id ?? randomUUID();
+  const clipRecordId = ownership === "retry" && existing ? existing.id : randomUUID();
   const storagePrefix = `clips/${clipRecordId}`;
   const row = {
     source_platform: "kick",
@@ -50,6 +50,9 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext)
     storage_prefix: storagePrefix,
     status: "processing",
     submitted_by: submittedBy.id,
+    community_submitter_name: null,
+    community_name_consent_at: null,
+    community_submission_id: community?.submissionId ?? null,
     failure_reason: null,
     imported_at: null,
   };
@@ -78,14 +81,30 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext)
     putObject: (object, signal) => putR2Object(object, signal),
     cleanup: async () => deleteR2Objects(await listR2Keys(storagePrefix)),
     publish: async () => {
-      const { error } = await supabase
-        .from("clips")
-        .update({ status: "published", imported_at: new Date().toISOString(), failure_reason: null })
-        .eq("id", clipRecordId);
-      if (error) throw new Error("O clipe foi enviado ao R2, mas não foi possível publicá-lo.");
+      await publishImportedClip(
+        clipRecordId,
+        community?.submissionId ?? null,
+        async () => {
+          const { error } = await supabase
+            .from("clips")
+            .update({ status: "published", imported_at: new Date().toISOString(), failure_reason: null })
+            .eq("id", clipRecordId)
+            .eq("status", "processing");
+          if (error) throw new Error("O clipe foi enviado ao R2, mas não foi possível publicá-lo.");
+        },
+        async (submissionId, id) => {
+          const { data, error } = await supabase.rpc("finalize_community_clip_import", {
+            p_submission_id: submissionId,
+            p_clip_id: id,
+          });
+          if (error || data !== true) throw new Error("O clipe foi enviado ao R2, mas não foi possível finalizar a submissão.");
+        },
+      );
     },
     markFailed: async (reason) => {
-      await supabase.from("clips").update({ status: "failed", failure_reason: reason }).eq("id", clipRecordId);
+      let update = supabase.from("clips").update({ status: "failed", failure_reason: reason }).eq("id", clipRecordId).eq("status", "processing");
+      if (community) update = update.eq("community_submission_id", community.submissionId);
+      await update;
     },
   });
 

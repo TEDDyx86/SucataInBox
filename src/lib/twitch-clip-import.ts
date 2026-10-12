@@ -2,9 +2,11 @@ import "server-only";
 import { findTeamPlayerByLiveHandle } from "@/lib/clip-player-mapping";
 import { createSupabaseAdminClient, type StaffContext } from "@/lib/supabase/server";
 import { resolveTwitchClip } from "@/lib/twitch-clips";
+import { resolveClipImportOwnership } from "@/lib/community-clip-import";
+import type { CommunityClipImportContext } from "@/lib/clip-import";
 
 /** Store official Twitch metadata and embed reference; Twitch retains the video. */
-export async function importTwitchClip(sourceUrl: string, submittedBy: StaffContext) {
+export async function importTwitchClip(sourceUrl: string, submittedBy: StaffContext, community?: CommunityClipImportContext) {
   const metadata = await resolveTwitchClip(sourceUrl);
   const broadcasterLogin = metadata.broadcasterLogin;
   if (!broadcasterLogin) throw new Error("Não foi possível identificar o login Twitch do canal.");
@@ -13,14 +15,12 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
   const supabase = createSupabaseAdminClient();
   const { data: existing, error: lookupError } = await supabase
     .from("clips")
-    .select("id, status")
+    .select("id, status, community_submission_id")
     .eq("source_platform", "twitch")
     .eq("source_clip_id", metadata.clipId)
     .maybeSingle();
   if (lookupError) throw new Error("Não foi possível verificar se o clipe da Twitch já foi importado.");
-  if (existing && existing.status !== "failed") {
-    throw new Error("Este clipe já está importado.");
-  }
+  const ownership = resolveClipImportOwnership(existing, community?.submissionId ?? null);
 
   const record = {
     source_platform: "twitch",
@@ -39,24 +39,39 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
     thumbnail_key: null,
     playlist_key: null,
     storage_prefix: null,
-    status: "published",
+    status: community ? "processing" : "published",
     submitted_by: submittedBy.id,
+    community_submitter_name: null,
+    community_name_consent_at: null,
+    community_submission_id: community?.submissionId ?? null,
     failure_reason: null,
-    imported_at: new Date().toISOString(),
+    imported_at: community ? null : new Date().toISOString(),
   };
 
-  if (existing) {
+  let clipId: string;
+  if (ownership === "retry") {
+    if (!existing) throw new Error("Não foi possível localizar o clipe para retry.");
+    clipId = existing.id;
     const { error } = await supabase.from("clips").update(record).eq("id", existing.id);
     if (error) throw new Error("Não foi possível atualizar o clipe da Twitch.");
-    return { id: existing.id, title: metadata.title, playerId: player.id, playerName: player.name };
+  } else {
+    const { data, error } = await supabase.from("clips").insert(record).select("id").single();
+    if (error?.code === "23505") throw new Error("Este clipe já está importado.");
+    if (error || !data) throw new Error("Não foi possível registrar o clipe da Twitch.");
+    clipId = data.id;
   }
 
-  const { data, error } = await supabase
-    .from("clips")
-    .insert(record)
-    .select("id")
-    .single();
-  if (error?.code === "23505") throw new Error("Este clipe já está importado.");
-  if (error || !data) throw new Error("Não foi possível registrar o clipe da Twitch.");
-  return { id: data.id, title: metadata.title, playerId: player.id, playerName: player.name };
+  if (community) {
+    const { data, error } = await supabase.rpc("finalize_community_clip_import", {
+      p_submission_id: community.submissionId,
+      p_clip_id: clipId,
+    });
+    if (error || data !== true) {
+      await supabase.from("clips").update({ status: "failed", failure_reason: "Não foi possível finalizar a submissão." })
+        .eq("id", clipId).eq("community_submission_id", community.submissionId).eq("status", "processing");
+      throw new Error("Não foi possível finalizar a submissão comunitária da Twitch.");
+    }
+  }
+
+  return { id: clipId, title: metadata.title, playerId: player.id, playerName: player.name };
 }
