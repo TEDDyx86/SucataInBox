@@ -29,16 +29,16 @@ O endpoint usa o cliente Supabase de serviço somente no servidor. A criação �
 
 Criar `public.clip_submissions`, separada de `public.clips`, com: UUID, plataforma, ID e URL do clipe, apelido opcional, consentimento, estado (`pending`, `processing`, `failed`), erro seguro de processamento, `processing_started_at` e timestamps. O hash não fica na submissão: uma tabela separada o associa apenas ao contador de rate limit de uma hora. RLS fica habilitado sem política de leitura/escrita para `anon` ou `authenticated`. A rota pública só pode inserir através da RPC de submissão validada; rotas administrativas usam service role após autorização staff.
 
-Adicionar à tabela `clips` campos opcionais `community_submitter_name` e `community_name_consent_at`. A consulta pública seleciona e renderiza o apelido apenas junto a clipes com `status = 'published'`. O clipe continua usando as colunas e regras atuais de reprodução: Kick copiado para R2; Twitch por embed oficial.
+Adicionar à tabela `clips` campos opcionais `community_submitter_name`, `community_name_consent_at` e `community_submission_id`. O último identifica exclusivamente a submissão que criou um clipe ainda em processamento/falha; importações diretas do staff mantêm esse campo nulo. A finalização verifica a associação e a limpa ao publicar, mantendo apenas apelido e consentimento no clipe. A rejeição limpa somente clipes associados à submissão; nunca remove um clipe preexistente do staff com o mesmo link. A consulta pública seleciona e renderiza o apelido apenas junto a clipes com `status = 'published'`. O clipe continua usando as colunas e regras atuais de reprodução: Kick copiado para R2; Twitch por embed oficial.
 
 ### Moderação e processamento
 
 Em `/admin/clips`, adicionar uma fila privada de pendentes/falhas, separada do atalho staff existente. Cada item mostra link/plataforma, apelido consentido se existir, data, erro quando falhou e ações relevantes. Para evitar duplicar falhas na tela, a lista de importações exclui clipes cujo par plataforma/ID ainda esteja na fila comunitária; o clipe passa a aparecer nela quando a submissão é finalizada.
 
 - **Aprovar:** claim atômico de `pending` → `processing`; chama `importKickClip` ou `importTwitchClip` já existentes. O autor comunitário é passado como metadado opcional. A finalização publica o clipe com apelido e timestamp de consentimento e apaga a submissão na mesma transação, para não deixar submissão órfã após publicação.
-- **Falhar:** atualiza a submissão para `failed`, apresenta erro seguro e disponibiliza retry. O registro de clipe falho, se criado, permanece oculto pela regra pública existente.
+- **Falhar:** atualiza a submissão para `failed`, apresenta erro seguro e disponibiliza retry. O registro de clipe falho, se criado e associado à submissão, permanece oculto pela regra pública existente.
 - **Retry:** repete o importador idempotente para o mesmo clipe. Em caso de sucesso, publica e apaga a submissão.
-- **Rejeitar/apagar:** confirma a ação, remove do R2 quaisquer objetos da tentativa, remove o registro de clipe correspondente e apaga a submissão. Falhas de limpeza devem manter o clipe oculto e permitir repetir a exclusão até a remoção completa.
+- **Rejeitar/apagar:** confirma a ação, remove do R2 quaisquer objetos da tentativa, remove somente registros de clipe associados àquela submissão e apaga a submissão. Nunca apaga um clipe anterior/importado diretamente. Falhas de limpeza devem manter o clipe oculto e permitir repetir a exclusão até a remoção completa.
 
 Os Route Handlers de moderação exigem a sessão staff existente e aceitam tanto `admin` como `moderator`. Devem impedir dupla aprovação/rejeição concorrente por atualização condicional de estado. Submissões em processamento não podem ser rejeitadas simultaneamente. A rota de importação mantém o limite de execução atual de 60 segundos; depois de dois minutos, a tela de moderação apresenta um retry de recuperação e a API só permite a retomada se o `processing_started_at` ainda estiver vencido. Essa transição condicional recupera crashes/timeouts sem worker externo. Retry primeiro confere o clipe correspondente e é idempotente, sem criar publicação duplicada.
 
@@ -59,7 +59,7 @@ Os Route Handlers de moderação exigem a sessão staff existente e aceitam tant
 
 - Parsers e rota pública: URLs válidas Kick/Twitch, URL inválida/host proibido, campos excessivos, consentimento ausente com apelido, honeypot, duplicados e rate limit (incluindo requisições concorrentes).
 - Banco/RLS: visitante não lê fila, não insere diretamente nem vê nomes pendentes; a RPC de envio é transacional e expira hashes após uma hora.
-- Moderação: admin e moderador autorizados; não-staff recebe 401; rejeição apaga; dupla ação concorrente não duplica trabalho; falha mantém estado retryável; retry bem-sucedido publica uma única vez e remove submissão; exclusão remove metadados e mídia parcial.
+- Moderação: admin e moderador autorizados; não-staff recebe 401; rejeição apaga; dupla ação concorrente não duplica trabalho; falha mantém estado retryável; retry bem-sucedido publica uma única vez e remove submissão; exclusão remove metadados e mídia parcial sem apagar um clipe preexistente do staff com o mesmo link.
 - Galeria: apenas status `published`; apelido consentido é exibido, nome ausente não cria byline; rejeitados/pendentes/falhos continuam invisíveis.
 - Verificações do projeto: testes Vitest, TypeScript, lint e build. Documentar a nova migration Supabase e qualquer configuração operacional em `docs/clips-setup.md`.
 
