@@ -48,3 +48,6 @@ txt.txt
 
 # Pastas de etapas anteriores do projeto.
 cblo-site/
+
+# Worktrees locais de desenvolvimento.
+/.worktrees/
