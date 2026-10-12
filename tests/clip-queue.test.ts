@@ -32,6 +32,22 @@ describe("Kick import queue", () => {
     expect(result?.issues).toHaveLength(0);
   });
 
+  it("accepts Coach Staff Kick clips into the direct import queue", () => {
+    const result = queueModule?.enqueueClipLinks(
+      "https://kick.com/jukes/clips/clip_01M46K06Z01GDT3T87F3E4B7EG",
+      "kick",
+      [],
+      () => "coach-queue-id",
+    );
+
+    expect(result?.issues).toHaveLength(0);
+    expect(result?.items[0]).toMatchObject({
+      playerId: null,
+      playerName: "Jukes",
+      sourceUrl: "https://kick.com/jukes/clips/clip_01M46K06Z01GDT3T87F3E4B7EG",
+    });
+  });
+
   it("deduplicates links already queued or repeated in the pasted batch", () => {
     const url = "https://kick.com/vinnycaffe/clips/clip_01M46K06Z01GDT3T87F3E4B7EG";
     const result = queueModule?.enqueueClipLinks(`${url}\n${url}`, "kick", [], () => "queue-id");

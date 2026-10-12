@@ -1,5 +1,5 @@
 import "server-only";
-import { TEAM } from "@/data/team";
+import { getClipOwnerDisplay } from "@/lib/clip-owner-display";
 import { createSupabasePublicClient, hasSupabasePublicConfig } from "@/lib/supabase/server";
 
 export type PublishedClip = {
@@ -11,7 +11,9 @@ export type PublishedClip = {
   source_created_at: string | null;
   title: string;
   player_id: string | null;
+  coach_staff_id: string | null;
   player_name: string;
+  owner_tag: "Coach Staff" | null;
   duration_seconds: number;
   view_count: number;
   created_at: string;
@@ -23,14 +25,14 @@ export async function getPublishedClips(): Promise<PublishedClip[]> {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("clips")
-    .select("id, source_platform, source_clip_id, source_url, source_thumbnail_url, source_created_at, title, player_id, duration_seconds, view_count, created_at, community_submitter_name")
+    .select("id, source_platform, source_clip_id, source_url, source_thumbnail_url, source_created_at, title, player_id, coach_staff_id, duration_seconds, view_count, created_at, community_submitter_name")
     .eq("status", "published")
     .order("source_created_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
   if (error) throw new Error("Não foi possível carregar os clipes publicados.");
-  const playerNames = new Map(TEAM.map((player) => [player.id, player.name]));
   return (data ?? []).map((clip) => ({
     ...clip,
-    player_name: playerNames.get(clip.player_id) ?? "Jogador não atribuído",
+    player_name: getClipOwnerDisplay(clip.player_id, clip.coach_staff_id).name,
+    owner_tag: getClipOwnerDisplay(clip.player_id, clip.coach_staff_id).tag,
   })) as PublishedClip[];
 }

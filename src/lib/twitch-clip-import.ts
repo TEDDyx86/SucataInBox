@@ -1,5 +1,5 @@
 import "server-only";
-import { findTeamPlayerByLiveHandle } from "@/lib/clip-player-mapping";
+import { findClipOwnerByLiveHandle, toClipOwnerColumns } from "@/lib/clip-owner-mapping";
 import { createSupabaseAdminClient, type StaffContext } from "@/lib/supabase/server";
 import { resolveTwitchClip } from "@/lib/twitch-clips";
 import { resolveClipImportOwnership } from "@/lib/community-clip-import";
@@ -10,8 +10,8 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
   const metadata = await resolveTwitchClip(sourceUrl);
   const broadcasterLogin = metadata.broadcasterLogin;
   if (!broadcasterLogin) throw new Error("Não foi possível identificar o login Twitch do canal.");
-  const player = findTeamPlayerByLiveHandle("twitch", broadcasterLogin);
-  if (!player) throw new Error(`O canal Twitch "${broadcasterLogin}" não está vinculado a um jogador do elenco.`);
+  const owner = findClipOwnerByLiveHandle("twitch", broadcasterLogin);
+  if (!owner) throw new Error(`O canal Twitch "${broadcasterLogin}" não está vinculado a um jogador nem ao Coach Staff.`);
   const supabase = createSupabaseAdminClient();
   const { data: existing, error: lookupError } = await supabase
     .from("clips")
@@ -28,7 +28,7 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
     source_url: metadata.sourceUrl,
     source_thumbnail_url: metadata.thumbnailUrl,
     source_created_at: metadata.createdAt,
-    player_id: player.id,
+    ...toClipOwnerColumns(owner),
     kick_clip_id: null,
     kick_url: null,
     title: metadata.title,
@@ -76,5 +76,12 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
     }
   }
 
-  return { id: clipId, title: metadata.title, playerId: player.id, playerName: player.name };
+  return {
+    id: clipId,
+    title: metadata.title,
+    playerId: owner.type === "player" ? owner.id : null,
+    coachStaffId: owner.type === "coach_staff" ? owner.id : null,
+    ownerType: owner.type,
+    playerName: owner.name,
+  };
 }

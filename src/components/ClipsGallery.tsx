@@ -59,14 +59,14 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
             </select>
           </label>
           <label className="grid gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-faint">
-            Jogador
+            Jogador / Coach Staff
             <select
-              aria-label="Filtrar por jogador"
+              aria-label="Filtrar por jogador ou Coach Staff"
               value={playerFilter}
               onChange={(event) => setPlayerFilter(event.target.value)}
               className="h-11 min-w-48 rounded-lg border border-hairline bg-surface px-3 text-xs font-bold normal-case tracking-normal text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              <option value="all">Todos os jogadores</option>
+              <option value="all">Todos</option>
               {players.map((player) => <option key={player} value={player}>{player}</option>)}
             </select>
           </label>
@@ -102,6 +102,7 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
                 <div className="p-4">
                   <h2 className="truncate text-base font-black text-white">{clip.title}</h2>
                   <p className="mt-1 truncate text-xs font-bold text-subtle">{clip.player_name}</p>
+                  {clip.owner_tag && <span className="mt-2 inline-flex rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-accent">{clip.owner_tag}</span>}
                   {clip.community_submitter_name && (
                     <p className="mt-1 truncate text-xs text-faint">Enviado por {clip.community_submitter_name}</p>
                   )}

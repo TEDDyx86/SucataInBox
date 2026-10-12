@@ -1,6 +1,6 @@
 import { parseKickClipUrl } from "./kick-clips";
 import { parseTwitchClipUrl } from "./twitch-clip-parser";
-import { findTeamPlayerByLiveHandle } from "./clip-player-mapping";
+import { findClipOwnerByLiveHandle } from "./clip-owner-mapping";
 
 export type ClipQueueStatus = "queued" | "processing" | "completed" | "failed";
 export type ClipSourcePlatform = "kick" | "twitch";
@@ -41,13 +41,13 @@ export function enqueueClipLinks(
       if (sourcePlatform === "kick") {
         const parsed = parseKickClipUrl(kickUrl);
         clipId = parsed.clipId;
-        const player = findTeamPlayerByLiveHandle("kick", parsed.channelSlug);
-        if (!player) {
-          issues.push({ line: index + 1, message: `O canal Kick "${parsed.channelSlug}" não está vinculado a um jogador do elenco.` });
+        const owner = findClipOwnerByLiveHandle("kick", parsed.channelSlug);
+        if (!owner) {
+          issues.push({ line: index + 1, message: `O canal Kick "${parsed.channelSlug}" não está vinculado a um jogador nem ao Coach Staff.` });
           return;
         }
-        playerId = player.id;
-        playerName = player.name;
+        playerId = owner.type === "player" ? owner.id : null;
+        playerName = owner.name;
       } else {
         clipId = parseTwitchClipUrl(kickUrl);
       }

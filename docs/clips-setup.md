@@ -5,7 +5,7 @@ O módulo usa Supabase Auth/Postgres para contas e metadados e Cloudflare R2 pri
 ## 1. Supabase
 
 1. Configure um projeto Supabase e desative o cadastro público em **Authentication → Sign In / Providers → Allow new users to sign up**.
-2. Execute as migrations `supabase/migrations/202610070001_clips.sql`, `supabase/migrations/202610070002_clip_player_assignment.sql`, `supabase/migrations/202610070003_twitch_clip_sources.sql` e `supabase/migrations/202610120001_community_clip_submissions.sql`, nessa ordem, no SQL Editor ou via Supabase CLI. Em uma instalação existente com as três primeiras aplicadas, aplique somente a migration comunitária. Ela habilita `pg_cron` e agenda a remoção periódica dos hashes temporários de rate limit; confirme que a extensão `pg_cron` está disponível no projeto Supabase.
+2. Execute as migrations `supabase/migrations/202610070001_clips.sql`, `supabase/migrations/202610070002_clip_player_assignment.sql`, `supabase/migrations/202610070003_twitch_clip_sources.sql`, `supabase/migrations/202610120001_community_clip_submissions.sql` e `supabase/migrations/202610120002_coach_staff_clip_attribution.sql`, nessa ordem, no SQL Editor ou via Supabase CLI. Em uma instalação existente com as quatro primeiras aplicadas, aplique somente a migration Coach Staff. A migration comunitária habilita `pg_cron` e agenda a remoção periódica dos hashes temporários de rate limit; confirme que a extensão `pg_cron` está disponível no projeto Supabase.
 3. Crie o primeiro usuário no painel **Authentication → Users**. Use um email e senha inicial fortes.
 4. Promova essa primeira conta a admin no SQL Editor, substituindo o email:
 
@@ -26,7 +26,7 @@ O módulo usa Supabase Auth/Postgres para contas e metadados e Cloudflare R2 pri
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (**somente servidor; nunca `NEXT_PUBLIC_`**)
 
-Depois do primeiro login, o admin pode criar/remover contas e atribuir funções em `/admin/users`. Ao criar um usuário, defina uma senha inicial e compartilhe-a por um canal privado. Moderadores e admins podem importar clipes diretamente ou revisar a fila comunitária em `/admin/clips`; o jogador é identificado pelo canal da Kick ou pelo login do broadcaster Twitch. A atribuição pode ser corrigida na lista de clipes. O cadastro público de contas continua fechado.
+Depois do primeiro login, o admin pode criar/remover contas e atribuir funções em `/admin/users`. Ao criar um usuário, defina uma senha inicial e compartilhe-a por um canal privado. Moderadores e admins podem importar clipes diretamente ou revisar a fila comunitária em `/admin/clips`; canais configurados em `TEAM` são atribuídos ao jogador e canais em `COACH_STAFF` são atribuídos ao membro Coach Staff. A atribuição de jogadores pode ser corrigida na lista de clipes. O cadastro público de contas continua fechado.
 
 ### Submissões comunitárias de clipes
 
@@ -36,7 +36,7 @@ As submissões ficam em `public.clip_submissions`, com RLS habilitado e sem pol�
 
 O endpoint limita cada IP a cinco tentativas válidas por janela móvel de uma hora. Ele HMACa o IP recebido no `X-Forwarded-For` confiável da plataforma e grava somente o hash, nunca o endereço puro. A migration agenda via `pg_cron` a limpeza dos registros expirados. Honeypot, validação estrita dos hosts/plataformas, deduplicação e limite de corpo complementam o rate limit; não há CAPTCHA.
 
-Na fila, admins e moderadores podem aprovar, tentar novamente falhas ou rejeitar. A aprovação usa os importadores atuais e publica o clipe só após concluir o processamento; uma falha fica oculta e disponível para retry. Processamentos parados por mais de dois minutos podem ser recuperados. Rejeitar exige confirmação e remove permanentemente a submissão, o registro de clipe criado por ela e os objetos parciais do R2. A limpeza nunca apaga um clipe importado diretamente pelo staff que tenha o mesmo link. Após publicar, a submissão transitória é apagada e permanecem apenas o clipe e, havendo consentimento, o apelido público.
+Na fila, admins e moderadores podem aprovar, tentar novamente falhas ou rejeitar. A aprovação usa os importadores atuais e publica o clipe só após concluir o processamento; uma falha fica oculta e disponível para retry. Processamentos parados por mais de dois minutos podem ser recuperados. Rejeitar exige confirmação e remove permanentemente a submissão, o registro de clipe criado por ela e os objetos parciais do R2. A limpeza nunca apaga um clipe importado diretamente pelo staff que tenha o mesmo link. Após publicar, a submissão transitória é apagada e permanecem apenas o clipe e, havendo consentimento, o apelido público. Clipes atribuídos a presidentes ou coaches exibem o nome configurado em `COACH_STAFF` e a tag pública **Coach Staff**.
 
 Não é necessária uma nova variável de ambiente no deploy: o rate limit usa a chave server-side já existente `SUPABASE_SERVICE_ROLE_KEY`. Aplique e valide a migration no Supabase antes de publicar as novas rotas e páginas.
 

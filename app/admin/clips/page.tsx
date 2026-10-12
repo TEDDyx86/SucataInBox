@@ -2,6 +2,7 @@ import { ClipAdminList, type ManagedClip } from "@/components/ClipAdminList";
 import { ClipImportForm } from "@/components/ClipImportForm";
 import { ClipSubmissionReview } from "@/components/ClipSubmissionReview";
 import { TEAM } from "@/data/team";
+import { getClipOwnerDisplay } from "@/lib/clip-owner-display";
 import { getClipSubmissionQueue } from "@/lib/clip-submission-moderation-server";
 import { createSupabaseAdminClient, hasSupabaseServerConfig } from "@/lib/supabase/server";
 
@@ -15,7 +16,7 @@ export default async function AdminClipsPage() {
   const [{ data, error }, submissions] = await Promise.all([
     supabase
       .from("clips")
-      .select("id, title, source_platform, source_url, player_id, status, failure_reason, created_at")
+      .select("id, title, source_platform, source_url, player_id, coach_staff_id, status, failure_reason, created_at")
       .is("community_submission_id", null)
       .order("created_at", { ascending: false })
       .limit(100),
@@ -23,10 +24,10 @@ export default async function AdminClipsPage() {
   ]);
   if (error) throw new Error("Não foi possível carregar os clipes do painel.");
   const players = TEAM.map(({ id, name }) => ({ id, name }));
-  const playerNames = new Map(players.map((player) => [player.id, player.name]));
   const clips = (data ?? []).map((clip) => ({
     ...clip,
-    player_name: playerNames.get(clip.player_id) ?? "Jogador não atribuído",
+    player_name: getClipOwnerDisplay(clip.player_id, clip.coach_staff_id).name,
+    owner_tag: getClipOwnerDisplay(clip.player_id, clip.coach_staff_id).tag,
   })) as ManagedClip[];
 
   return (

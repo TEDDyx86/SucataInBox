@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { importKickMediaPackage } from "@/lib/clip-media-import";
 import { rewriteKickMediaPlaylist } from "@/lib/hls-playlist";
 import { parseKickClipUrl } from "@/lib/kick-clips";
-import { findTeamPlayerByLiveHandle } from "@/lib/clip-player-mapping";
+import { findClipOwnerByLiveHandle, toClipOwnerColumns } from "@/lib/clip-owner-mapping";
 import { resolveKickClip } from "@/lib/kick-source";
 import { deleteR2Objects, hasR2Config, listR2Keys, putR2Object } from "@/lib/r2";
 import { createSupabaseAdminClient, type StaffContext } from "@/lib/supabase/server";
@@ -17,8 +17,8 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
   if (!hasR2Config()) throw new Error("Configure as credenciais do Cloudflare R2 antes de importar clipes.");
 
   const { clipId, channelSlug } = parseKickClipUrl(kickUrl);
-  const player = findTeamPlayerByLiveHandle("kick", channelSlug);
-  if (!player) throw new Error(`O canal Kick "${channelSlug}" não está vinculado a um jogador do elenco.`);
+  const owner = findClipOwnerByLiveHandle("kick", channelSlug);
+  if (!owner) throw new Error(`O canal Kick "${channelSlug}" não está vinculado a um jogador nem ao Coach Staff.`);
   const metadata = await resolveKickClip(clipId);
   const supabase = createSupabaseAdminClient();
   const { data: existing, error: lookupError } = await supabase
@@ -39,7 +39,7 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
     source_created_at: metadata.createdAt,
     kick_clip_id: clipId,
     kick_url: kickUrl,
-    player_id: player.id,
+    ...toClipOwnerColumns(owner),
     title: metadata.title,
     channel_name: metadata.channelName,
     duration_seconds: Math.ceil(metadata.durationSeconds),
@@ -118,8 +118,10 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
     id: clipRecordId,
     title: metadata.title,
     channelName: metadata.channelName,
-    playerId: player.id,
-    playerName: player.name,
+    playerId: owner.type === "player" ? owner.id : null,
+    coachStaffId: owner.type === "coach_staff" ? owner.id : null,
+    ownerType: owner.type,
+    playerName: owner.name,
     durationSeconds: metadata.durationSeconds,
   };
 }

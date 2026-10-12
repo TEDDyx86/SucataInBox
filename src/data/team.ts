@@ -187,6 +187,11 @@ export const TEAM: Player[] = [
         label: "X",
       },
       {
+        platform: "kick",
+        url: "https://kick.com/my-chamaqueeuvou",
+        label: "Kick",
+      },
+      {
         platform: "twitch",
         url: "https://www.twitch.tv/my_chamaqueeuvou",
         label: "Twitch",

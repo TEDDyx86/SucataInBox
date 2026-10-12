@@ -9,7 +9,9 @@ export type ManagedClip = {
   source_platform: "kick" | "twitch";
   source_url: string;
   player_id: string | null;
+  coach_staff_id: string | null;
   player_name: string;
+  owner_tag: "Coach Staff" | null;
   status: "processing" | "published" | "failed";
   failure_reason: string | null;
   created_at: string;
@@ -73,21 +75,27 @@ export function ClipAdminList({ clips, players }: { clips: ManagedClip[]; player
               <li key={clip.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-white">{clip.title}</p>
-                  <p className="mt-1 truncate text-xs text-subtle">{clip.player_name} · {new Date(clip.created_at).toLocaleString("pt-BR")}</p>
+                  <p className="mt-1 truncate text-xs text-subtle">
+                    {clip.player_name}{clip.owner_tag ? ` · ${clip.owner_tag}` : ""} · {new Date(clip.created_at).toLocaleString("pt-BR")}
+                  </p>
                   {clip.failure_reason && <p className="mt-2 text-xs text-red-300">{clip.failure_reason}</p>}
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="sr-only" htmlFor={`clip-player-${clip.id}`}>Jogador de {clip.title}</label>
-                  <select
-                    id={`clip-player-${clip.id}`}
-                    value={clip.player_id ?? ""}
-                    disabled={assigning === clip.id}
-                    onChange={(event) => void assignPlayer(clip, event.target.value)}
-                    className="h-10 max-w-48 rounded-lg border border-hairline bg-background px-2 text-xs font-bold text-white disabled:opacity-50"
-                  >
-                    <option value="" disabled>Selecionar jogador</option>
-                    {players.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
-                  </select>
+                  {!clip.coach_staff_id && (
+                    <>
+                      <label className="sr-only" htmlFor={`clip-player-${clip.id}`}>Jogador de {clip.title}</label>
+                      <select
+                        id={`clip-player-${clip.id}`}
+                        value={clip.player_id ?? ""}
+                        disabled={assigning === clip.id}
+                        onChange={(event) => void assignPlayer(clip, event.target.value)}
+                        className="h-10 max-w-48 rounded-lg border border-hairline bg-background px-2 text-xs font-bold text-white disabled:opacity-50"
+                      >
+                        <option value="" disabled>Selecionar jogador</option>
+                        {players.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
+                      </select>
+                    </>
+                  )}
                   <a href={clip.source_url} target="_blank" rel="noopener noreferrer" className="min-h-10 rounded-lg border border-hairline px-3 py-2 text-xs font-bold text-subtle hover:text-white">{clip.source_platform === "twitch" ? "Twitch" : "Kick"}</a>
                   <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${clip.status === "published" ? "bg-emerald-500/10 text-emerald-400" : clip.status === "failed" ? "bg-red-500/10 text-red-300" : "bg-amber-500/10 text-amber-200"}`}>
                     {clip.status === "published" ? "Publicado" : clip.status === "failed" ? "Falhou" : "Importando / oculto"}
