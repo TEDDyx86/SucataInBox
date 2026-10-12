@@ -21,12 +21,11 @@ export async function handleClipSubmissionPost(
 
   let rawBody: string;
   try {
-    rawBody = await request.text();
+    const body = await readBoundedBody(request);
+    if (body.kind === "too-large") return json({ error: "Requisição muito grande." }, 413);
+    rawBody = body.text;
   } catch {
     return json({ error: "Envie um JSON válido." }, 400);
-  }
-  if (new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BYTES) {
-    return json({ error: "Requisição muito grande." }, 413);
   }
 
   let body: unknown;
@@ -44,8 +43,9 @@ export async function handleClipSubmissionPost(
   const parsed = parseClipSubmission(body);
   if (!parsed.ok) return json({ error: parsed.error }, 422);
 
-  const rawIp = request.headers.get("x-vercel-forwarded-for")?.trim();
-  if (!dependencies.secret || !rawIp || rawIp.includes(",") || isIP(rawIp) === 0) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const rawIp = forwardedFor?.split(",").at(-1)?.trim();
+  if (!dependencies.secret || !rawIp || isIP(rawIp) === 0) {
     return json({ error: "Não foi possível receber o envio agora. Tente novamente mais tarde." }, 503);
   }
 
@@ -67,4 +67,28 @@ export async function handleClipSubmissionPost(
 
 function json(body: object, status: number): Response {
   return Response.json(body, { status, headers: { "cache-control": "no-store" } });
+}
+
+async function readBoundedBody(request: Request): Promise<{ kind: "body"; text: string } | { kind: "too-large" }> {
+  if (!request.body) return { kind: "body", text: "" };
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_REQUEST_BYTES) {
+      await reader.cancel();
+      return { kind: "too-large" };
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { kind: "body", text: new TextDecoder().decode(body) };
 }

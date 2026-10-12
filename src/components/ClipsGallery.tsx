@@ -41,7 +41,9 @@ export function ClipsGallery({ clips }: { clips: PublishedClip[] }) {
           </button>
         </header>
 
-        {submissionOpen && <div id="clip-submission-form"><ClipSubmissionForm /></div>}
+        <div id="clip-submission-form">
+          {submissionOpen && <ClipSubmissionForm />}
+        </div>
 
         <div className="mb-6 flex flex-wrap items-end justify-end gap-3">
           <label className="grid gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-faint">

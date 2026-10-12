@@ -31,7 +31,7 @@ describe("public submission endpoint contract", () => {
     return handleClipSubmissionPost(
       new Request("https://example.test/api/clip-submissions", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-vercel-forwarded-for": "203.0.113.2" },
+        headers: { "content-type": "application/json", "x-forwarded-for": "198.51.100.11, 203.0.113.2" },
         body: typeof body === "string" ? body : JSON.stringify(body),
       }),
       {
@@ -92,7 +92,7 @@ describe("public submission endpoint contract", () => {
   it("rejects oversized requests before parsing", async () => {
     const request = new Request("https://example.test/api/clip-submissions", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-vercel-forwarded-for": "203.0.113.2" },
+      headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.2" },
       body: `{"sourceUrl":"${"a".repeat(5000)}"}`,
     });
     const submit = vi.fn();

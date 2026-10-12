@@ -44,6 +44,7 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
     community_submitter_name: null,
     community_name_consent_at: null,
     community_submission_id: community?.submissionId ?? null,
+    community_import_started_at: community?.processingStartedAt ?? null,
     failure_reason: null,
     imported_at: community ? null : new Date().toISOString(),
   };
@@ -65,10 +66,12 @@ export async function importTwitchClip(sourceUrl: string, submittedBy: StaffCont
     const { data, error } = await supabase.rpc("finalize_community_clip_import", {
       p_submission_id: community.submissionId,
       p_clip_id: clipId,
+      p_processing_started_at: community.processingStartedAt,
     });
     if (error || data !== true) {
       await supabase.from("clips").update({ status: "failed", failure_reason: "Não foi possível finalizar a submissão." })
-        .eq("id", clipId).eq("community_submission_id", community.submissionId).eq("status", "processing");
+        .eq("id", clipId).eq("community_submission_id", community.submissionId)
+        .eq("community_import_started_at", community.processingStartedAt).eq("status", "processing");
       throw new Error("Não foi possível finalizar a submissão comunitária da Twitch.");
     }
   }

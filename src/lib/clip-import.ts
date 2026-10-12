@@ -10,7 +10,7 @@ import { createSupabaseAdminClient, type StaffContext } from "@/lib/supabase/ser
 import { publishImportedClip, resolveClipImportOwnership } from "@/lib/community-clip-import";
 
 const KICK_CDN = "clips.kick.com";
-export type CommunityClipImportContext = { submissionId: string };
+export type CommunityClipImportContext = { submissionId: string; processingStartedAt: string };
 
 /** Import a public Kick clip and persist its complete HLS package to private R2. */
 export async function importKickClip(kickUrl: string, submittedBy: StaffContext, community?: CommunityClipImportContext) {
@@ -53,6 +53,7 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
     community_submitter_name: null,
     community_name_consent_at: null,
     community_submission_id: community?.submissionId ?? null,
+    community_import_started_at: community?.processingStartedAt ?? null,
     failure_reason: null,
     imported_at: null,
   };
@@ -96,6 +97,7 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
           const { data, error } = await supabase.rpc("finalize_community_clip_import", {
             p_submission_id: submissionId,
             p_clip_id: id,
+            p_processing_started_at: community?.processingStartedAt,
           });
           if (error || data !== true) throw new Error("O clipe foi enviado ao R2, mas não foi possível finalizar a submissão.");
         },
@@ -103,7 +105,11 @@ export async function importKickClip(kickUrl: string, submittedBy: StaffContext,
     },
     markFailed: async (reason) => {
       let update = supabase.from("clips").update({ status: "failed", failure_reason: reason }).eq("id", clipRecordId).eq("status", "processing");
-      if (community) update = update.eq("community_submission_id", community.submissionId);
+      if (community) {
+        update = update
+          .eq("community_submission_id", community.submissionId)
+          .eq("community_import_started_at", community.processingStartedAt);
+      }
       await update;
     },
   });

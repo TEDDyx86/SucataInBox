@@ -1,6 +1,8 @@
 import { ClipAdminList, type ManagedClip } from "@/components/ClipAdminList";
 import { ClipImportForm } from "@/components/ClipImportForm";
+import { ClipSubmissionReview } from "@/components/ClipSubmissionReview";
 import { TEAM } from "@/data/team";
+import { getClipSubmissionQueue } from "@/lib/clip-submission-moderation-server";
 import { createSupabaseAdminClient, hasSupabaseServerConfig } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -10,11 +12,15 @@ export default async function AdminClipsPage() {
     return <main className="mx-auto max-w-6xl px-4 py-10 text-sm text-amber-100">Configure Supabase no ambiente para usar o painel.</main>;
   }
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("clips")
-    .select("id, title, source_platform, source_url, player_id, status, failure_reason, created_at")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [{ data, error }, submissions] = await Promise.all([
+    supabase
+      .from("clips")
+      .select("id, title, source_platform, source_url, player_id, status, failure_reason, created_at")
+      .is("community_submission_id", null)
+      .order("created_at", { ascending: false })
+      .limit(100),
+    getClipSubmissionQueue(),
+  ]);
   if (error) throw new Error("Não foi possível carregar os clipes do painel.");
   const players = TEAM.map(({ id, name }) => ({ id, name }));
   const playerNames = new Map(players.map((player) => [player.id, player.name]));
@@ -29,6 +35,7 @@ export default async function AdminClipsPage() {
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">Administração</p>
         <h1 className="mt-2 text-3xl font-black text-white">Clipes</h1>
       </header>
+      <ClipSubmissionReview submissions={submissions} now={new Date().toISOString()} />
       <ClipImportForm />
 
       <section className="mt-8">

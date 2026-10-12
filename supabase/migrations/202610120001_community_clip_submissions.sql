@@ -7,6 +7,7 @@ create table if not exists public.clip_submissions (
   display_name_consent_at timestamptz,
   status text not null default 'pending' check (status in ('pending', 'processing', 'failed')),
   failure_reason text,
+  cleanup_error boolean not null default false,
   processing_started_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -25,7 +26,8 @@ create index if not exists clip_submissions_queue_idx
 alter table public.clips
   add column if not exists community_submitter_name text,
   add column if not exists community_name_consent_at timestamptz,
-  add column if not exists community_submission_id uuid;
+  add column if not exists community_submission_id uuid,
+  add column if not exists community_import_started_at timestamptz;
 
 alter table public.clips
   add constraint clips_community_submission_fk
@@ -86,6 +88,7 @@ begin
     or length(p_clip_id) not between 5 and 100
     or p_source_url is null
     or length(p_source_url) > 2048
+    or p_ip_hash is null
     or p_ip_hash !~ '^[0-9a-f]{64}$'
     or (p_display_name is not null and (length(p_display_name) not between 1 and 40 or p_display_name <> btrim(p_display_name)))
     or (p_display_name is not null and p_consent is not true)
@@ -158,7 +161,8 @@ grant execute on function public.submit_community_clip(text, text, text, text, b
 
 create or replace function public.finalize_community_clip_import(
   p_submission_id uuid,
-  p_clip_id uuid
+  p_clip_id uuid,
+  p_processing_started_at timestamptz
 )
 returns boolean
 language plpgsql
@@ -174,7 +178,9 @@ begin
 
   select * into v_submission
   from public.clip_submissions
-  where id = p_submission_id and status = 'processing'
+  where id = p_submission_id
+    and status = 'processing'
+    and processing_started_at = p_processing_started_at
   for update;
 
   if not found then
@@ -189,12 +195,14 @@ begin
       end,
       community_name_consent_at = v_submission.display_name_consent_at,
       community_submission_id = null,
+      community_import_started_at = null,
       imported_at = now(),
       failure_reason = null
   where id = p_clip_id
     and source_platform = v_submission.source_platform
     and source_clip_id = v_submission.source_clip_id
     and community_submission_id = p_submission_id
+    and community_import_started_at = p_processing_started_at
     and status = 'processing';
 
   if not found then
@@ -206,8 +214,8 @@ begin
 end;
 $$;
 
-revoke all on function public.finalize_community_clip_import(uuid, uuid) from public, anon, authenticated;
-grant execute on function public.finalize_community_clip_import(uuid, uuid) to service_role;
+revoke all on function public.finalize_community_clip_import(uuid, uuid, timestamptz) from public, anon, authenticated;
+grant execute on function public.finalize_community_clip_import(uuid, uuid, timestamptz) to service_role;
 
 create extension if not exists pg_cron with schema extensions;
 
